@@ -1,0 +1,17 @@
+- How to intercept permissions:
+add permission_classes for a certain ViewSet ([IsAuthenticated])
+add authentication_classes for a certain ViewSet ([JWTAuthentication])
+
+class FlightViewSet(viewsts.ModelViewSet):
+    queryset = Flight.objects.all()
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    OR
+
+* For each method you can override and implement 'if request.user.authenticated:' and then do super().method
+* And with less code duplication: 
+
+class IsStaff(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_staff)
