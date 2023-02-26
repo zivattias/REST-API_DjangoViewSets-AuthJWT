@@ -1,3 +1,9 @@
+- Don't forget to imlement a router when using Viewsets
+router = DefaultRouter()
+router.register(r'version', VersionViewSet, basename='version')
+urlpatterns = [...]
+urlpatterns.extend(router.urls)
+
 - How to intercept permissions:
 add permission_classes for a certain ViewSet ([IsAuthenticated])
 add authentication_classes for a certain ViewSet ([JWTAuthentication])
