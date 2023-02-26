@@ -64,8 +64,14 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
         ]
 
+
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
         fields = "__all__"
-        
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = "__all__"
