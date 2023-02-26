@@ -58,10 +58,11 @@ class Order(models.Model):
     order_date = models.DateField(db_column="order_date")
     total_price = models.FloatField(db_column="total_price")
 
-    def clean(self):
+    def clean(self) -> ValidationError | None:
         if self.seats > self.flight.seats_left:
             raise ValidationError(
                 {
                     "seats": "Number of ordered seats cannot exceed available seats of the flight."
                 }
             )
+        return
