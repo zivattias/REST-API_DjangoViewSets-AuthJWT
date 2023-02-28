@@ -77,10 +77,10 @@ class FlightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Flight
-        exclude = (
+        exclude = [
             "origin_dt",
             "destination_dt",
-        )
+        ]
 
     def get_origin_time(self, obj):
         return datetime.strftime(obj.origin_dt, "%d/%m/%Y %H:%M:%S")

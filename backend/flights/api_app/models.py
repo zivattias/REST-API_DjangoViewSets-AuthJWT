@@ -36,9 +36,7 @@ class Flight(models.Model):
         blank=False,
         validators=[MinValueValidator(0)],
     )
-    seats_left = models.IntegerField(
-        db_column="seats_left", null=False, blank=False, default=total_seats
-    )
+    seats_left = models.IntegerField(db_column="seats_left")
     is_cancelled = models.BooleanField(db_column="is_cancelled", default=False)
     price = models.FloatField(db_column="price", null=False, blank=False)
 
@@ -46,6 +44,12 @@ class Flight(models.Model):
         return (
             f"Flight #{self.flight_num} ({self.origin_code} > {self.destination_code})"
         )
+
+    def save(self, *args, **kwargs):
+        # If seats_left is not given, defaults to total_seats
+        if not self.seats_left:
+            self.seats_left = self.total_seats
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "flights"
