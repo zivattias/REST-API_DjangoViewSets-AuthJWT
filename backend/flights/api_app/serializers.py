@@ -28,6 +28,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "first_name": {"required": True},
             "last_name": {"required": True},
+            "password": {"write-only": True},
+            "confirm_password": {"write-only": True},
         }
 
     def validate(self, attrs):
@@ -59,9 +61,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "id",
             "first_name",
             "last_name",
             "email",
+            "username",
+            "is_staff",
         ]
 
 
