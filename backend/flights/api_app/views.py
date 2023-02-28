@@ -156,3 +156,12 @@ class FlightsViewSet(viewsets.ModelViewSet):
             qs = qs.filter(destination_dt__lte=dest_datetime)
 
         return qs
+
+
+# Order serializer, create - WIP: update, get all orders, search by flight_num & name (first_nae & last_name)
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
+    queryset = Order.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)

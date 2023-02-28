@@ -56,11 +56,13 @@ class Flight(models.Model):
 
 
 class Order(models.Model):
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    seats = models.IntegerField(db_column="seats")
-    order_date = models.DateField(db_column="order_date")
-    total_price = models.FloatField(db_column="total_price")
+    flight = models.ForeignKey(
+        Flight, on_delete=models.CASCADE, null=False, blank=False
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    seats = models.IntegerField(db_column="seats", null=False, blank=False)
+    order_date = models.DateField(db_column="order_date", auto_now=True, null=True, blank=True)
+    total_price = models.FloatField(db_column="total_price", null=True, blank=True)
 
     class Meta:
         db_table = "orders"
@@ -75,6 +77,9 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Validate the Order object with previously declared clean() method
+        # Update order total_price according to Flight.price * self.seats
+        self.total_price = self.seats * self.flight.price
+
         super().save(*args, **kwargs)  # Save the Order object in DB
 
         # Update the Flight object with the new seats_left value

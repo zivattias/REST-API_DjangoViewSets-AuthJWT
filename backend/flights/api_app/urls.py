@@ -3,11 +3,18 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import UserAPIView, RegistrationAPIView, UsersAdminViewSet, FlightsViewSet
+from .views import (
+    UserAPIView,
+    RegistrationAPIView,
+    UsersAdminViewSet,
+    FlightsViewSet,
+    OrderViewSet,
+)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"flights", FlightsViewSet, basename="flights")
+router.register(r"orders", OrderViewSet, basename="orders")
 
 urlpatterns = [
     path("users/", UsersAdminViewSet.as_view({"get": "list"}), name="admin_users"),
