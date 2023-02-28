@@ -1,11 +1,11 @@
-from datetime import datetime
 from rest_framework import viewsets
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from .models import Flight, Order
+from .utils import parse_datetime_str
 from .serializers import (
     RegistrationSerializer,
     UserSerializer,
@@ -94,35 +94,15 @@ class FlightsViewSet(viewsets.ReadOnlyModelViewSet):
         # Hence, the 'if " " in date' check!
 
         if params.get("origin_date") is not None:
-            origin_date_str = params["origin_date"]
-            if " " in origin_date_str:
-                try:
-                    origin_datetime = datetime.strptime(
-                        origin_date_str, "%d/%m/%Y %H:%M"
-                    )
-                    qs = qs.filter(origin_dt__gte=origin_datetime)
-                except ValueError:
-                    return qs.none()
-            else:
-                try:
-                    origin_date = datetime.strptime(origin_date_str, "%d/%m/%Y")
-                    qs = qs.filter(origin_dt__date__gte=origin_date.date())
-                except ValueError:
-                    return qs.none()
+            origin_datetime = parse_datetime_str(params["origin_date"])
+            if origin_datetime is None:
+                return qs.none()
+            qs = qs.filter(origin_dt__gte=origin_datetime)
 
         if params.get("destination_date") is not None:
-            dest_date_str = params["destination_date"]
-            if " " in dest_date_str:
-                try:
-                    dest_datetime = datetime.strptime(dest_date_str, "%d/%m/%Y %H:%M")
-                    qs = qs.filter(destination_dt__lte=dest_datetime)
-                except ValueError:
-                    return qs.none()
-            else:
-                try:
-                    dest_date = datetime.strptime(dest_date_str, "%d/%m/%Y")
-                    qs = qs.filter(destination_dt__date__lte=dest_date.date())
-                except ValueError:
-                    return qs.none()
+            dest_datetime = parse_datetime_str(params["destination_date"])
+            if dest_datetime is None:
+                return qs.none()
+            qs = qs.filter(destination_dt__lte=dest_datetime)
 
         return qs
