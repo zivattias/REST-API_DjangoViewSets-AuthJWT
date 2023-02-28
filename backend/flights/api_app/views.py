@@ -1,11 +1,17 @@
+from datetime import datetime
 from rest_framework import viewsets
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-
-from .serializers import RegistrationSerializer, UserSerializer
+from .models import Flight, Order
+from .serializers import (
+    RegistrationSerializer,
+    UserSerializer,
+    FlightSerializer,
+    OrderSerializer,
+)
 
 
 # Registration serializer, available for anyone
@@ -48,12 +54,75 @@ class UsersAdminViewSet(viewsets.ReadOnlyModelViewSet):
         if not name:
             return User.objects.all()
 
-        if " " not in name:
+        names = name.split(" ")
+        if len(names) > 1:
+            first_name = names[0]
+            last_name = names[1]
             return User.objects.filter(
-                Q(first_name__icontains=name) | Q(last_name__icontains=name)
+                first_name__icontains=first_name, last_name__icontains=last_name
             )
 
-        first_name, last_name = name.split(" ")
         return User.objects.filter(
-            Q(first_name__icontains=first_name) & Q(last_name__icontains=last_name)
+            Q(first_name__icontains=names[0]) | Q(last_name__icontains=names[0])
         )
+
+
+# Get all flights / by flight_num & search for a specific flight by origin, destination, origin_date and destination_date range, price range, is_cancelled
+class FlightsViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = FlightSerializer
+
+    def get_queryset(self):
+        qs = Flight.objects.all()
+        # Convert query params to a dict() for better data accessibility code-wise
+        params = self.request.query_params.dict()
+        # Start filtering the QuerySet according to query params
+        if params.get("origin_city") is not None:
+            qs = qs.filter(origin_city__iexact=params["origin_city"])
+        if params.get("destination_city") is not None:
+            qs = qs.filter(destination_city__iexact=params["destination_city"])
+        if params.get("min_price") is not None:
+            qs = qs.filter(price__gte=params["min_price"])
+        if params.get("max_price") is not None:
+            qs = qs.filter(price__lte=params["max_price"])
+        if params.get("is_cancelled") is not None:
+            is_cancelled = params["is_cancelled"].lower() == "true"
+            qs = qs.filter(is_cancelled=is_cancelled)
+
+        # For origin date & destination date here are 2 acceptable formats for query params:
+        # 1. DD/MM/YYYY
+        # 2. DD/MM/YYYY HH:MM
+        # Hence, the 'if " " in date' check!
+
+        if params.get("origin_date") is not None:
+            origin_date_str = params["origin_date"]
+            if " " in origin_date_str:
+                try:
+                    origin_datetime = datetime.strptime(
+                        origin_date_str, "%d/%m/%Y %H:%M"
+                    )
+                    qs = qs.filter(origin_dt__gte=origin_datetime)
+                except ValueError:
+                    return qs.none()
+            else:
+                try:
+                    origin_date = datetime.strptime(origin_date_str, "%d/%m/%Y")
+                    qs = qs.filter(origin_dt__date__gte=origin_date.date())
+                except ValueError:
+                    return qs.none()
+
+        if params.get("destination_date") is not None:
+            dest_date_str = params["destination_date"]
+            if " " in dest_date_str:
+                try:
+                    dest_datetime = datetime.strptime(dest_date_str, "%d/%m/%Y %H:%M")
+                    qs = qs.filter(destination_dt__lte=dest_datetime)
+                except ValueError:
+                    return qs.none()
+            else:
+                try:
+                    dest_date = datetime.strptime(dest_date_str, "%d/%m/%Y")
+                    qs = qs.filter(destination_dt__date__lte=dest_date.date())
+                except ValueError:
+                    return qs.none()
+
+        return qs

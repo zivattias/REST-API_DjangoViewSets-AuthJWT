@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
+from datetime import datetime
 from .models import Flight, Order
 
 
@@ -71,9 +72,21 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
+    origin_time = serializers.SerializerMethodField()
+    destination_time = serializers.SerializerMethodField()
+
     class Meta:
         model = Flight
-        fields = "__all__"
+        exclude = (
+            "origin_dt",
+            "destination_dt",
+        )
+
+    def get_origin_time(self, obj):
+        return datetime.strftime(obj.origin_dt, "%d/%m/%Y %H:%M:%S")
+
+    def get_destination_time(self, obj):
+        return datetime.strftime(obj.destination_dt, "%d/%m/%Y %H:%M:%S")
 
 
 class OrderSerializer(serializers.ModelSerializer):
