@@ -91,7 +91,7 @@ class FlightsViewSet(viewsets.ReadOnlyModelViewSet):
         # For origin date & destination date here are 2 acceptable formats for query params:
         # 1. DD/MM/YYYY
         # 2. DD/MM/YYYY HH:MM
-        # Hence, the 'if " " in date' check!
+        # Hence, the 'if " " in date' check @ parse_datetime_str()!
 
         if params.get("origin_date") is not None:
             origin_datetime = parse_datetime_str(params["origin_date"])
