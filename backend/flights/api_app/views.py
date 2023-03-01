@@ -188,4 +188,24 @@ class OrderViewSet(viewsets.ModelViewSet):
         if not user.is_staff:
             return Order.objects.filter(user=user.id)
         else:
-            return Order.objects.all()
+            qs = Order.objects.all()
+            params = self.request.query_params.dict()
+            if params.get("flight_id") is not None:
+                qs = qs.filter(flight=params["flight_id"])
+            if params.get("flight_num") is not None:
+                qs = qs.filter(flight__flight_num=params["flight_num"])
+            if params.get("name") is not None:
+                if " " in params["name"]:
+                    names = params["name"].split(" ")
+                    first_name = names[0]
+                    last_name = names[1]
+                    qs = qs.filter(
+                        Q(user__first_name__icontains=first_name)
+                        & Q(user__last_name__icontains=last_name)
+                    )
+                else:
+                    qs = qs.filter(
+                        Q(user__first_name__icontains=params["name"])
+                        | Q(user__last_name__icontains=params["name"])
+                    )
+            return qs
