@@ -78,8 +78,8 @@ class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
         exclude = [
-            "origin_dt",
-            "destination_dt",
+            "origin_dt",  # = origin_time
+            "destination_dt",  # = detination_time
         ]
 
     def get_origin_time(self, obj):
@@ -90,6 +90,15 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    date_submitted = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
-        fields = "__all__"
+        exclude = [
+            "order_date",  # = date_submitted
+        ]
+
+    def get_date_submitted(self, obj):
+        return datetime.strptime(f"{obj.order_date}", "%Y-%m-%d").strftime("%d-%m-%Y")
+
+    

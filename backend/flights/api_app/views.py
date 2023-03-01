@@ -164,4 +164,21 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
 
     def create(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
         return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        order = self.get_object()
+        if not request.user.is_staff:
+            if request.user.id != order.user.id:
+                return Response(
+                    {"order_id": "The order is owned by a different user."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+        serializer = self.get_serializer(order, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
