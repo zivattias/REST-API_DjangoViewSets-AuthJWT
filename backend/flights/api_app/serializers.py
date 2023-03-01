@@ -91,6 +91,7 @@ class FlightSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     date_submitted = serializers.SerializerMethodField()
+    user_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -101,4 +102,6 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_date_submitted(self, obj):
         return datetime.strptime(f"{obj.order_date}", "%Y-%m-%d").strftime("%d-%m-%Y")
 
-    
+    def get_user_name(self, obj):
+        user = User.objects.get(pk=obj.user.id)
+        return user.first_name + " " + user.last_name

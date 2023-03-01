@@ -158,7 +158,7 @@ class FlightsViewSet(viewsets.ModelViewSet):
         return qs
 
 
-# Order serializer, create - WIP: update, get all orders, search by flight_num & name (first_nae & last_name)
+# Order serializer, staff: create, update, get all orders, search by flight_num & name (first_nae & last_name), authenticated: get their own order
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
@@ -182,3 +182,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             self.perform_update(serializer)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_staff:
+            return Order.objects.filter(user=user.id)
+        else:
+            return Order.objects.all()

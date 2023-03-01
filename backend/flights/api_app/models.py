@@ -61,7 +61,9 @@ class Order(models.Model):
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     seats = models.IntegerField(db_column="seats", null=False, blank=False)
-    order_date = models.DateField(db_column="order_date", auto_now=True, null=True, blank=True)
+    order_date = models.DateField(
+        db_column="order_date", auto_now=True, null=True, blank=True
+    )
     total_price = models.FloatField(db_column="total_price", null=True, blank=True)
 
     class Meta:
