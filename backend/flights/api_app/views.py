@@ -158,7 +158,7 @@ class FlightsViewSet(viewsets.ModelViewSet):
         return qs
 
 
-# Order serializer, staff: create, update, get all orders, search by flight_num & name (first_nae & last_name), authenticated: get their own order
+# Order serializer, staff: create, update, get all orders, search by flight_num & name (first_name & last_name) | authenticated: get their own order
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
