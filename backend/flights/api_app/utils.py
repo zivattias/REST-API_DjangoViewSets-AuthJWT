@@ -1,5 +1,5 @@
 from datetime import datetime
-from serializers import ValidationError
+from rest_framework.serializers import ValidationError
 
 # Helper function to parse datetime objs, used in get_queryset() of FlightsViewSet
 def parse_datetime_str(datetime_str: str) -> None | datetime:
