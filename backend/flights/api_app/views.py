@@ -23,18 +23,19 @@ class RegistrationAPIView(generics.CreateAPIView):
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.save()
 
-        refresh = RefreshToken.for_user(user)
+            refresh = RefreshToken.for_user(user)
 
-        return Response(
-            {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-            },
-            status=status.HTTP_201_CREATED,
-        )
+            return Response(
+                {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 # Get self user data, available for authenticated User
@@ -79,9 +80,7 @@ class FlightsViewSet(viewsets.ModelViewSet):
 
         data_copy = request.data.copy()
         data_copy["origin_dt"] = validate_datetime(data_copy.get("origin_dt"))
-        data_copy["destination_dt"] = validate_datetime(
-            data_copy.get("destination_dt")
-        )
+        data_copy["destination_dt"] = validate_datetime(data_copy.get("destination_dt"))
 
         serializer = self.get_serializer(data=data_copy)
         if serializer.is_valid(raise_exception=True):
