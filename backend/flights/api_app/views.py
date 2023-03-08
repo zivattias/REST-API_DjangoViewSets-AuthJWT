@@ -1,14 +1,13 @@
 from rest_framework import serializers
 from datetime import datetime
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets
 from django.db.models import Q
-from rest_framework.decorators import action
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from .models import Flight, Order
-from .utils import parse_datetime_str
+from .utils import parse_datetime_str, validate_datetime
 from .serializers import (
     RegistrationSerializer,
     UserSerializer,
@@ -74,25 +73,13 @@ class UsersAdminViewSet(viewsets.ReadOnlyModelViewSet):
 class FlightsViewSet(viewsets.ModelViewSet):
     serializer_class = FlightSerializer
 
-    # Date strings converter to ISO format, which is save-able in DB & corresponds to DateTimeField()
-    def validate_datetime(self, value, default=None):
-        if not value:
-            return default
-
-        try:
-            return datetime.strptime(value, "%d/%m/%Y %H:%M").isoformat()
-        except ValueError:
-            raise serializers.ValidationError(
-                "Invalid datetime format. Use the format DD/MM/YYYY HH:MM."
-            )
-
     def create(self, request, *args, **kwargs):
         if not request.user.is_staff:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         data_copy = request.data.copy()
-        data_copy["origin_dt"] = self.validate_datetime(data_copy.get("origin_dt"))
-        data_copy["destination_dt"] = self.validate_datetime(
+        data_copy["origin_dt"] = validate_datetime(data_copy.get("origin_dt"))
+        data_copy["destination_dt"] = validate_datetime(
             data_copy.get("destination_dt")
         )
 
@@ -108,9 +95,9 @@ class FlightsViewSet(viewsets.ModelViewSet):
 
         data_copy = request.data.copy()
         if "origin_dt" in data_copy:
-            data_copy["origin_dt"] = self.validate_datetime(data_copy.get("origin_dt"))
+            data_copy["origin_dt"] = validate_datetime(data_copy.get("origin_dt"))
         if "destination_dt" in data_copy:
-            data_copy["destination_dt"] = self.validate_datetime(
+            data_copy["destination_dt"] = validate_datetime(
                 data_copy.get("destination_dt")
             )
 
