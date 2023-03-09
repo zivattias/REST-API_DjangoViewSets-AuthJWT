@@ -1,10 +1,9 @@
-from rest_framework import serializers
-from datetime import datetime
 from rest_framework import viewsets
 from django.db.models import Q
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError, AccessToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.models import User
 from .models import Flight, Order
 from .utils import parse_datetime_str, validate_datetime
@@ -36,6 +35,30 @@ class RegistrationAPIView(generics.CreateAPIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+# Logout view (blacklist refresh token)
+class BlacklistRefreshToken(generics.CreateAPIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        if request.data.get("refresh"):
+            try:
+                refresh_token = RefreshToken(request.data.get("refresh"))
+                refresh_token.blacklist()
+                return Response(
+                    {"refresh": "Successfully blacklisted token aka logged-out!"},
+                    status=status.HTTP_200_OK,
+                )
+            except TokenError:
+                return Response(
+                    {"refresh": "Token is blacklisted"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+        return Response(
+            {"refresh": "Token is missing"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 # Get self user data, available for authenticated User

@@ -9,6 +9,7 @@ from .views import (
     UsersAdminViewSet,
     FlightsViewSet,
     OrderViewSet,
+    BlacklistRefreshToken
 )
 from rest_framework.routers import DefaultRouter
 
@@ -22,6 +23,7 @@ urlpatterns = [
     path("auth/signup/", RegistrationAPIView.as_view(), name="signup"),
     path("auth/login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/logout/", BlacklistRefreshToken.as_view(), name="token_blacklist")
 ]
 
 urlpatterns.extend(router.urls)
