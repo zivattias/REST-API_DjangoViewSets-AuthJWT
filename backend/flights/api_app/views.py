@@ -52,7 +52,7 @@ class BlacklistRefreshToken(generics.CreateAPIView):
                 )
             except TokenError:
                 return Response(
-                    {"refresh": "Token is blacklisted"},
+                    {"refresh": "Token is already blacklisted"},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
         return Response(
